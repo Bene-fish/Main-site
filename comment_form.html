@@ -1,0 +1,47 @@
+<div id="prev-comments">
+
+</div>
+
+<input type="textarea" id="new-comment" placeholder="Enter your comment"></input>
+<input type="button" value="Post comment" id="comment-post"></input>
+<div id="err"></div>
+
+<script>
+    var xhr = new XMLHttpRequest();
+    var loc = window.location.pathname;
+    loc = loc.substring(0,loc.length - 5);
+    var s = 'loc=' + loc;
+    xhr.open('GET','http://localhost:8080/comments&' + s);
+   // xhr.setRequestHeader('Content-Length', '' + s.length);
+
+    xhr.onload = function(){
+        var objs = JSON.parse(xhr.responseText);
+        objs.comments.forEach(function(v){
+            $('#prev-comments').append('<div><strong>' + v.usr + ':</strong> ' + v.comment + '</div><br/>');
+        });
+    }
+
+    xhr.send();
+
+    $('#comment-post').click(function(){
+        var auth2 = gapi.auth2.getAuthInstance();
+        if(!auth2.isSignedIn.get()){
+            $('#err').html("Must be signed in to post a comment!");
+            return;
+        }
+
+        var usr = auth2.currentUser.get().getBasicProfile();
+        $('#err').html('');
+
+        var yhr = new XMLHttpRequest();
+        yhr.open('POST','http://localhost:8080/comment');
+        yhr.onload = function(){
+            $('#prev-comments').append('<div><strong>' + usr.getName() + ':</strong> ' + $('#new-comment').val() + '</div><br/>');
+            $('#new-comment').val('');
+        }
+
+        yhr.send(JSON.stringify({loc: loc, usr: usr.getName(), comment: $('#new-comment').val()}));
+
+    });
+
+</script>

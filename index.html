@@ -24,18 +24,40 @@
       <script>
 
           function initMap() {{
-              var myLatLng = {{lat: -25.363, lng: 131.044}};
+              var myLatLng = {{lat: 40.5022598, lng: -74.45092749999998}};
 
               var map = new google.maps.Map(document.getElementById('main_content'), {{
-                        zoom: 4,
+                        zoom: 15,
                         center: myLatLng
                }});
 
-             var marker = new google.maps.Marker({{
-                position: myLatLng,
-                map: map,
-                title: 'Hello World!'
-                }});
+              var xhr = new XMLHttpRequest();
+              xhr.open('GET', 'http://localhost:8080/markers');
+          //  xhr.setRequestHeader('Content-Type', 'application/json');
+          //  xhr.setRequestHeader('Content-Length', id_token.length + '');
+              xhr.onload = function() {{
+                  obj = JSON.parse(xhr.responseText);
+                  obj.locs.forEach(function(val){{
+                      var tmp = new google.maps.Marker({{
+
+                        position: {{lat: val.geo[0], lng: val.geo[1]}},
+                        map: map,
+                        clickable: true
+                      }});
+
+                      var tp_con = "<div>" + val.u_name + " needs <br/>" + val.tags.join(", ");
+                      tp_con += '<br/><a href="'+ val.loc +'">Click here for more...</a></div>'
+
+                      var tp_win = new google.maps.InfoWindow({{
+                            content: tp_con
+                      }});
+
+                      tmp.addListener('click', function(){{
+                          tp_win.open(map, tmp);
+                      }});
+                  }});
+              }}
+              xhr.send();
         }}
 
     </script>
@@ -43,4 +65,3 @@
         src="https://maps.googleapis.com/maps/api/js?key={api_key}&signed_in=false&callback=initMap"></script>
   </body>
 </html>
-  <body>
